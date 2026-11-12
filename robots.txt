@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tristateclassiccarrestoration.com/sitemap.xml
