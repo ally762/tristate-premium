@@ -35,6 +35,15 @@
   const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -10% 0px', threshold: .06 });
   $$('.reveal, .img-reveal').forEach(el => io.observe(el));
 
+  /* swap a lazy <img data-src data-srcset> in */
+  function swapIn(im) { if (im.dataset.srcset) im.srcset = im.dataset.srcset; if (im.dataset.src) im.src = im.dataset.src; delete im.dataset.src; delete im.dataset.srcset; }
+
+  /* Reviews: equal boxes, click to read the full text */
+  $$('.review__more').forEach(b => b.addEventListener('click', () => {
+    const r = b.closest('.review'), open = r.classList.toggle('is-open');
+    b.setAttribute('aria-expanded', String(open)); b.textContent = open ? 'Show less' : 'Read full review';
+  }));
+
   /* Hero slideshow */
   const hero = $('.hero');
   if (hero) {
@@ -44,13 +53,14 @@
     const go = k => {
       i = (k + slides.length) % slides.length;
       slides.forEach((s, j) => s.classList.toggle('is-active', j === i));
+      if (document.readyState === 'complete') [i, (i + 1) % slides.length].forEach(j => { const im = slides[j].querySelector('img[data-src]'); if (im) swapIn(im); });
       dots.forEach((d, j) => { d.classList.remove('is-active'); if (j === i) { void d.offsetWidth; d.classList.add('is-active'); } });
       if (count) count.textContent = String(i + 1).padStart(2, '0');
       clearTimeout(timer); if (!reduce) timer = setTimeout(() => go(i + 1), DUR);
     };
     dots.forEach((d, j) => d.addEventListener('click', () => go(j)));
     // lazy-load the remaining slides after first paint
-    addEventListener('load', () => $$('img[data-src]', hero).forEach(im => { im.src = im.dataset.src; }));
+    addEventListener('load', () => setTimeout(() => $$('img[data-src]', hero).forEach(swapIn), 1200));
     go(0);
   }
 
@@ -60,14 +70,19 @@
     const frames = $$('.story__frames img', story), chapters = $$('.story__chapter', story);
     const counter = $('.story__counter b', story), fill = $('.story__bar i', story), cap = $('.story__cap', story);
     let loaded = false, cur = -1, ticking = false;
-    const load = () => { if (loaded) return; loaded = true; frames.forEach(f => { if (f.dataset.src) f.src = f.dataset.src; }); };
-    new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '100% 0px' }).observe(story);
+    // load frames progressively: the next few ahead of the current one
+    const want = k => { for (let j = k; j < Math.min(frames.length, k + 4); j++) if (frames[j].dataset.src) swapIn(frames[j]); };
+    const load = () => { if (loaded) return; loaded = true; want(0); };
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '60% 0px' }).observe(story);
     const update = () => {
       ticking = false;
       const r = story.getBoundingClientRect();
       const p = Math.min(1, Math.max(0, -r.top / (r.height - innerHeight)));
       const k = Math.min(frames.length - 1, Math.floor(p * frames.length));
-      if (k !== cur) {
+      if (loaded) want(k);
+      if (k !== cur && !(frames[k].complete && frames[k].naturalWidth > 1)) {
+        frames[k].addEventListener('load', () => requestAnimationFrame(update), { once: true });
+      } else if (k !== cur) {
         frames[cur]?.classList.remove('is-on'); frames[k].classList.add('is-on'); cur = k;
         if (counter) counter.textContent = String(k + 1).padStart(2, '0');
         if (cap) cap.textContent = frames[k].dataset.cap || '';
