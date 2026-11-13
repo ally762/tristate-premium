@@ -36,7 +36,11 @@
   $$('.reveal, .img-reveal').forEach(el => io.observe(el));
 
   /* swap a lazy <img data-src data-srcset> in */
-  function swapIn(im) { if (im.dataset.srcset) im.srcset = im.dataset.srcset; if (im.dataset.src) im.src = im.dataset.src; delete im.dataset.src; delete im.dataset.srcset; }
+  function swapIn(im) {
+    const pic = im.parentElement && im.parentElement.tagName === 'PICTURE' ? im.parentElement : null;
+    if (pic) pic.querySelectorAll('source[data-srcset]').forEach(s => { s.srcset = s.dataset.srcset; delete s.dataset.srcset; });
+    if (im.dataset.srcset) im.srcset = im.dataset.srcset; if (im.dataset.src) im.src = im.dataset.src; delete im.dataset.src; delete im.dataset.srcset;
+  }
 
   /* Reviews: equal boxes, click to read the full text */
   $$('.review__more').forEach(b => b.addEventListener('click', () => {
@@ -54,13 +58,15 @@
       i = (k + slides.length) % slides.length;
       slides.forEach((s, j) => s.classList.toggle('is-active', j === i));
       if (document.readyState === 'complete') [i, (i + 1) % slides.length].forEach(j => { const im = slides[j].querySelector('img[data-src]'); if (im) swapIn(im); });
+      else { const im = slides[i].querySelector('img[data-src]'); if (im) swapIn(im); }
       dots.forEach((d, j) => { d.classList.remove('is-active'); if (j === i) { void d.offsetWidth; d.classList.add('is-active'); } });
       if (count) count.textContent = String(i + 1).padStart(2, '0');
       clearTimeout(timer); if (!reduce) timer = setTimeout(() => go(i + 1), DUR);
     };
     dots.forEach((d, j) => d.addEventListener('click', () => go(j)));
     // lazy-load the remaining slides after first paint
-    addEventListener('load', () => setTimeout(() => $$('img[data-src]', hero).forEach(swapIn), 1200));
+    // only the next slide is fetched ahead of time (after the page has loaded)
+    addEventListener('load', () => setTimeout(() => { const im = slides[(i + 1) % slides.length].querySelector('img[data-src]'); if (im) swapIn(im); }, 1500));
     go(0);
   }
 
