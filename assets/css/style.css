@@ -137,7 +137,12 @@ h1 em, h2 em, h3 em, .serif-em { font-style: italic; font-weight: 400; color: va
 .drawer details a { font-family: var(--sans); font-size: .95rem; color: var(--muted); padding: 10px 0 10px 14px; }
 .drawer a[aria-current="page"] { font-style: italic; color: var(--red-2); }
 .drawer .btn { margin-top: 28px; width: 100%; font-family: var(--sans); font-size: .74rem; }
-@media (max-width: 1540px) { .header-phone { display: none; } .nav > a, .nav__drop > button { padding-inline: 10px; } }
+/* header uses the full width so nav + phone + button never overflow at any zoom level */
+.site-header .container { max-width: 1600px; }
+.header-cta, .nav { flex: none; }
+@media (max-width: 1720px) { .header-phone { display: none; } }
+@media (max-width: 1440px) { .nav > a, .nav__drop > button { padding-inline: 9px; letter-spacing: .16em; } }
+@media (max-width: 1300px) { .nav > a, .nav__drop > button { padding-inline: 7px; letter-spacing: .12em; font-size: .66rem; } .site-header .container { gap: 12px; } }
 @media (max-width: 1160px) { .nav, .header-cta .btn { display: none; } .burger { display: block; } }
 @media (max-width: 720px) {
   :root { --header-h: 70px; }
@@ -292,7 +297,7 @@ h1 em, h2 em, h3 em, .serif-em { font-style: italic; font-weight: 400; color: va
 .collage .c2 { position: absolute; left: 0; bottom: 0; width: 52%; aspect-ratio: 1; border: 10px solid var(--ink); }
 .collage .badge { position: absolute; left: 6%; top: 8%; width: 132px; height: 132px; border-radius: 50%; display: grid; place-items: center; text-align: center; background: var(--red); color: #fff; font-family: var(--serif); font-style: italic; font-size: 1.05rem; line-height: 1.1; animation: spin 24s linear infinite; }
 .collage .badge svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.collage .badge span { animation: spin 24s linear infinite reverse; display: block; }
+.collage .badge span { animation: spin 24s linear infinite reverse; display: block; white-space: nowrap; font-size: 1.15rem; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 960px) { .collage { min-height: 0; aspect-ratio: 1; } }
 
@@ -321,6 +326,12 @@ h1 em, h2 em, h3 em, .serif-em { font-style: italic; font-weight: 400; color: va
 .story__pin::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.35) 50%, rgba(0,0,0,.2) 100%), linear-gradient(0deg, rgba(0,0,0,.8), transparent 40%); }
 .story__ui { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding-top: calc(var(--header-h) + 40px); padding-bottom: 50px; }
 .story__title h2 { max-width: 760px; }
+.story__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.story__skip { flex: none; display: inline-flex; align-items: center; gap: 10px; margin-top: 4px; padding: 12px 20px; border: 1px solid var(--line-2); background: rgba(10,10,11,.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--bone-2); font-stretch: 115%; font-weight: 600; font-size: .66rem; letter-spacing: .26em; text-transform: uppercase; transition: background .3s, border-color .3s; }
+.story__skip:hover { background: var(--red); border-color: var(--red); color: #fff; }
+.story__skip svg { width: 15px; height: 15px; animation: skipBob 1.6s var(--ease) infinite; }
+@keyframes skipBob { 50% { transform: translateY(3px); } }
+@media (max-width: 560px) { .story__skip { padding: 10px 14px; } }
 .story__chapters { position: relative; height: 9rem; max-width: 520px; }
 .story__chapter { position: absolute; inset: 0; opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .story__chapter.is-on { opacity: 1; transform: none; }

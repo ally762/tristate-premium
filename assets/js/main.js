@@ -48,6 +48,14 @@
     b.setAttribute('aria-expanded', String(open)); b.textContent = open ? 'Show less' : 'Read full review';
   }));
 
+  /* Skip the photo story → jump to the next section */
+  $$('[data-skip]').forEach(a => a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href')); if (!t) return;
+    e.preventDefault();
+    const y = t.getBoundingClientRect().top + scrollY - ((header && header.offsetHeight) || 0);
+    scrollTo({ top: y, behavior: reduce ? 'auto' : 'smooth' });
+  }));
+
   /* Hero slideshow */
   const hero = $('.hero');
   if (hero) {
