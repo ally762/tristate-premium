@@ -58,7 +58,7 @@
   const story = $('.story');
   if (story) {
     const frames = $$('.story__frames img', story), chapters = $$('.story__chapter', story);
-    const counter = $('.story__counter b', story), fill = $('.story__bar i', story);
+    const counter = $('.story__counter b', story), fill = $('.story__bar i', story), cap = $('.story__cap', story);
     let loaded = false, cur = -1, ticking = false;
     const load = () => { if (loaded) return; loaded = true; frames.forEach(f => { if (f.dataset.src) f.src = f.dataset.src; }); };
     new IntersectionObserver(([e]) => { if (e.isIntersecting) load(); }, { rootMargin: '100% 0px' }).observe(story);
@@ -70,8 +70,9 @@
       if (k !== cur) {
         frames[cur]?.classList.remove('is-on'); frames[k].classList.add('is-on'); cur = k;
         if (counter) counter.textContent = String(k + 1).padStart(2, '0');
+        if (cap) cap.textContent = frames[k].dataset.cap || '';
       }
-      const c = Math.min(chapters.length - 1, Math.floor(p * chapters.length));
+      let c = 0; chapters.forEach((ch, j) => { if (k >= +(ch.dataset.from || 0)) c = j; });
       chapters.forEach((ch, j) => ch.classList.toggle('is-on', j === c));
       if (fill) fill.style.transform = `scaleX(${p})`;
     };
